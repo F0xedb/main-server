@@ -36,7 +36,6 @@
 ## Table of Contents
 
 * [About the Project](#about-the-project)
-  * [Built With](#built-with)
 * [Getting Started](#getting-started)
   * [Prerequisites](#prerequisites)
   * [Installation](#installation)
@@ -56,14 +55,10 @@
 <!-- GETTING STARTED -->
 ## Getting Started
 
-To get a local copy up and running follow these simple steps.
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
-```sh
-pacman -Syu main-server
-```
+All you need is `docker` and `docker-compose`
 
 ### Installation
  
@@ -71,9 +66,28 @@ pacman -Syu main-server
 ```sh
 git clone https:://github.com/F0xedb/main-server.git
 ```
-2. Install packages
+2. Get SSL certificate
 ```sh
-pacman -Syu main-server
+sudo certbot certonly --standalone
+```
+> When generating an ssl certificate make sure that all the subdomains are included
+
+Supply the certs via the traefik docker-compose file
+
+3. Create the public docker network
+```bash
+docker network create web
+```
+
+4. Start the traefik docker-compose file
+```bash
+cd traefik
+docker-compose up -d
+```
+5. Start the other docker-compose files (choose which one you want)
+```bash
+cd <container dir>
+docker-compose up -d
 ```
 
 
@@ -81,7 +95,26 @@ pacman -Syu main-server
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+Each docker-compose file manages 1 single application and all its dependencies.
+
+The traefik container is needed as a reverse proxy to manage all these applications.
+
+Each application is served on a subdomain. eg
+
+portainer -> `port.example.com`
+
+jenkins -> `jenkins.example.com`
+
+Here is a short list with description what each app does
+
+* portainer - Manage your docker network in a UI
+* scrumblr - A simple whiteboard online that serves as an agile manager
+* jenkins - This is a complex and advanced ci/cd pipeline app
+* repo - A simple webserver managing repositories
+* site - A simple webserver for your website
+* tos - A simple webserver for another site
+* traefik - A reverse proxy
+
 
 _For more examples, please refer to the [Documentation](https://www.github.com/F0xedb/main-server/wiki)_
 
