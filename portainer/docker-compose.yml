@@ -1,0 +1,27 @@
+version: '2'
+
+services:
+  portainer:
+    image: portainer/portainer
+    command: -H unix:///var/run/docker.sock
+    restart: always
+    networks:
+      - web
+    ports:
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=manager"
+      - "traefik.docker.network=web"
+      - "traefik.frontend.rule=Host:port.pbfp.xyz"
+      - "traefik.port=9000"
+
+volumes:
+  portainer_data:
+
+networks:
+  web:
+    external: true

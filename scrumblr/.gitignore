@@ -1,0 +1,8 @@
+.DS_Store
+rsync.sh
+*.swp
+*.log
+.monitor
+node_modules/
+*.rdb
+*.out

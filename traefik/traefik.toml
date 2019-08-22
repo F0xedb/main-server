@@ -1,0 +1,38 @@
+logLevel = "ERROR"
+InsecureSkipVerify = true
+defaultEntryPoints = ["http", "https"]
+
+[web]
+# Port for the status/dashboard page
+address = ":8080"
+
+[entryPoints]
+  [entryPoints.http]
+  address = ":80"
+    [entryPoints.http.redirect]
+    entryPoint = "https"
+  [entryPoints.https]
+  address = ":443"
+  [entryPoints.https.tls]
+    [[entryPoints.https.tls.certificates]]
+    certFile = "/cert.crt"
+    keyFile = "/cert.key"
+
+[retry]
+
+[docker]
+endpoint = "unix:///var/run/docker.sock"
+domain = "pbfp.xyz"
+watch = true
+exposedByDefault = false
+
+[acme]
+email = "tom@pbfp.xyz"
+storage = "acme.json"
+entryPoint = "https"
+onHostRule = true
+
+[acme.httpChallenge]
+entryPoint = "http"
+
+

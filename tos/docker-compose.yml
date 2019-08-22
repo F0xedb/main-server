@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+ hugo:
+  image: jojomi/hugo:latest
+  volumes:
+    - "./src/:/src"
+    - work:/output
+  environment:
+    - HUGO_REFRESH_TIME=3600
+    - HUGO_THEME=kross-hugo-portfolio-template
+    - HUGO_BASEURL=https://tos.pbfp.xyz
+  restart: unless-stopped
+
+ web:
+  image: jojomi/nginx-static
+  volumes:
+    - work:/var/www
+  environment:
+    - VIRTUAL_HOST=tos.pbfp.xyz
+  ports:
+    - 80
+  labels:
+    - "traefik.enable=true"
+    - "traefik.backend=tos"
+    - "traefik.docker.network=web"
+    - "traefik.frontend.rule=Host:tos.pbfp.xyz"
+    - "traefik.port=80"
+  networks:
+    - web
+  restart: unless-stopped
+
+networks:
+  web:
+     external: true
+
+volumes:
+  work:

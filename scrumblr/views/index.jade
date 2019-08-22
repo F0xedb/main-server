@@ -1,0 +1,70 @@
+extends layout
+
+block head
+	- var cardColours = ['pink', 'blue', 'green', 'yellow', 'white']
+	script(type='text/javascript').
+		var cardColours = !{JSON.stringify(cardColours)};
+block body
+	- if (locals.demo)
+		div.notice-bar this is a demo board. to make a private board, go to <a href="http://scrumblr.ca">scrumblr.ca</a>
+
+	//div.config
+	//	i.fa.fa-cog.fa-lg.faded-icon
+	<img src="https://tos.pbfp.xyz/images/logo.svg" width="75px" height="100px">
+
+	h1 <a href="http://scrumblr.ca">scrumblr</a> <a href="https://www.pbfp.xyz">PBFP</a> edition
+
+
+	div.board-outline
+		div#board
+			div#board-doodles
+			image#marker(src='images/marker.png')
+			image#eraser(src='images/eraser.png')
+
+
+			table#board-table.board-table
+				tr
+					td#icon-col(width='1%')
+						image#add-col.col-icon(width='20', height='20', src='images/icons/iconic/raster/black/plus_alt_32x32.png')
+						image#delete-col.col-icon(width='20', height='20', src='images/icons/iconic/raster/black/minus_alt_32x32.png')
+
+	div.buttons
+		i#create-card.fa.fa-plus-circle.fa-2x.bottom-icon
+		each colour in cardColours
+			div(id='create-#{colour}-card').create-card.bottom-icon
+				image(width='100%', height='100%', src='images/#{colour}-card.png')
+		i#smallify.fa.fa-expand.fa-2x.bottom-icon
+	
+
+	div.stickers
+		div.sticker#sticker-red
+		div.sticker#sticker-blue
+		div.sticker#sticker-yellow
+		div.sticker#sticker-green
+		br
+		div.sticker#sticker-pink
+		div.sticker#sticker-lightblue
+		div.sticker#sticker-orange
+		div.sticker#sticker-purple
+		br
+		div.sticker#sticker-gold
+		div.sticker#sticker-bluestar
+		div.sticker#sticker-silverstar
+		div.sticker#sticker-redstar
+		br
+		div.sticker#nosticker
+
+
+	div.names
+		p connected:
+		//image#user-icon(src="/images/icons/cc/black/png/user_icon&16.png")
+		input#yourname-input
+		span.you-text (you)
+		ul#names-ul
+
+	//div.trash
+	//	i.fa.fa-trash-o.fa-lg.faded-icon
+
+	//<div style="width: 980px; height: 450px; border: solid 2px; opacity:.1; margin-top: 100px"> this will be the backlog that only appears on drag or perhaps not at all</div>
+
+	<script type="text/javascript">	  var _gaq = _gaq || []; _gaq.push(['_setAccount', 'UA-2069672-4']);  _gaq.push(['_trackPageview']);   (function() {    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true; ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);  })(); </script>

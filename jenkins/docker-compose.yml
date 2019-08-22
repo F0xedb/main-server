@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+   jenkins:
+      image: jenkinsci/blueocean
+      user: root
+      networks:
+        - web
+      ports:
+        - "4205:4200"
+        - "50000:50000"
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - jenkins_home:/var/jenkins_home
+ 
+      #environment:
+      #  - JENKINS_HOME=/var/jenkins_home
+ 
+      labels:
+        - "traefik.enable=true"
+        - "traefik.backend=jenkins"
+        - "traefik.frontend.rule=Host:jenkins.pbfp.xyz"
+        - "traefik.docker.network=web"
+        - "traefik.port=8080"
+
+networks:
+ web:
+   external: true
+
+volumes:
+ jenkins_home:

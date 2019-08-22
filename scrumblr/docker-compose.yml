@@ -1,0 +1,30 @@
+version: '2'
+services:
+  app:
+    build: .
+    depends_on:
+      - redis
+    command: npm start -- --port 80 --redis redis:6379
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=scrumblr"
+      - "traefik.docker.network=web"
+      - "traefik.frontend.rule=Host:scrumblr.pbfp.xyz"
+      - "traefik.port=80"
+
+  redis:
+    image: redis
+    networks:
+      - web
+    volumes:
+      - redis_data:/var/lib/redis
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+        web:
+                external: true
