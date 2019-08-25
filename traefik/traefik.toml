@@ -10,9 +10,16 @@ address = ":8080"
   [entryPoints.http]
   address = ":80"
     [entryPoints.http.redirect]
-    entryPoint = "https"
+    #entryPoint = "https"
+    regex = "^http(.*).(odex.be)(.*)"
+    replacement = "https$1.pbfp.xyz$3"
+    permanent = true
   [entryPoints.https]
   address = ":443"
+    [entryPoints.https.redirect]
+    regex = "^https(.*).(odex.be)(.*)"
+    replacement = "https$1.pbfp.xyz$3"
+    permanent = true
   [entryPoints.https.tls]
     [[entryPoints.https.tls.certificates]]
     certFile = "/cert.crt"
