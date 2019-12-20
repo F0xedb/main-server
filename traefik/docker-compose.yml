@@ -1,23 +1,47 @@
-version: '3'
+version: "3.3"
 
 services:
-  app:
-    image: traefik
-    restart: always
+
+  traefik:
+    image: "traefik:v2.0.0-rc3"
+    container_name: "traefik"
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myhttpchallenge.acme.httpchallenge=true"
+      - "--certificatesresolvers.myhttpchallenge.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.myhttpchallenge.acme.email=tom@odex.be"
+      - "--certificatesresolvers.myhttpchallenge.acme.storage=/letsencrypt/acme.json"
+      # redirects to https
+    labels:
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.api.rule=Host(`traefik.odex.be`)"
+      - "traefik.http.routers.api.service=api@internal"
     ports:
       - "80:80"
       - "443:443"
       - "8080:8080"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik.toml:/traefik.toml
-      - /root/cert/cert.crt:/cert.crt
-      - /root/cert/cert.key:/cert.key
-      - /data/traefik/acme.json:/acme.json
+      - "./letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
-    networks:
-      - web
-
+  whoami:
+    image: "containous/whoami"
+    container_name: "simple-service"
+    labels:
+      - "traefik.enable=true"
+      # HTTPS Rules
+      - "traefik.http.routers.whoami_SSL.rule=Host(`www.odex.be`) || Host(`www.pbfp.xyz`)"
+      - "traefik.http.routers.whoami_SSL.entrypoints=websecure"
+      - "traefik.http.routers.whoami_SSL.tls.certresolver=myhttpchallenge"
+      # HTTP redirect
+      - "traefik.http.routers.whoami.entryPoints=web"
+      - "traefik.http.routers.whoami.middlewares=https_redirect"
+      - "traefik.http.middlewares.https_redirect.redirectscheme.scheme=https"
 networks:
   web:
-    external: true
+  external: true
+      
+

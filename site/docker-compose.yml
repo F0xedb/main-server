@@ -1,16 +1,20 @@
 version: '3'
 
 services:
-        web:
-              build: .
-              networks:
-                      - web
-              labels:
-                - "traefik.enable=true"
-                - "traefik.backend=website"
-                - "traefik.docker.network=web"
-                - "traefik.frontend.rule=Host:www.pbfp.xyz,pbfp.xyz"
-                - "traefik.port=80"
+   web:
+     build: .
+     networks:
+             - web
+     labels:
+       - "traefik.enable=true"
+       # HTTPS Rules
+       - "traefik.http.routers.tos_SSL.rule=Host(`www.odex.be`) || Host(`www.pbfp.xyz`)"
+       - "traefik.http.routers.tos_SSL.entrypoints=websecure"
+       - "traefik.http.routers.tos_SSL.tls.certresolver=myhttpchallenge"
+       # HTTP redirect
+       - "traefik.http.routers.tos.entryPoints=web"
+       - "traefik.http.routers.tos.middlewares=https_redirect"
+       - "traefik.http.middlewares.https_redirect.redirectscheme.scheme=https"
 networks:
-        web:
-                external: true
+ web:
+  external: true
