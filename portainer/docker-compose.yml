@@ -15,12 +15,13 @@ services:
     labels:
       - "traefik.enable=true"
       # HTTPS Rules
-      - "traefik.http.routers.tos_SSL.rule=Host(`port.odex.be`) || Host(`port.pbfp.xyz`)"
-      - "traefik.http.routers.tos_SSL.entrypoints=websecure"
-      - "traefik.http.routers.tos_SSL.tls.certresolver=myhttpchallenge"
+      - "traefik.http.routers.port_SSL.rule=Host(`port.odex.be`) || Host(`port.pbfp.xyz`)"
+      - "traefik.http.routers.port_SSL.entrypoints=websecure"
+      - "traefik.http.routers.port_SSL.tls.certresolver=myhttpchallenge"
+      - "traefik.http.services.port_SSL.loadbalancer.server.port=9000"
       # HTTP redirect
-      - "traefik.http.routers.tos.entryPoints=web"
-      - "traefik.http.routers.tos.middlewares=https_redirect"
+      - "traefik.http.routers.port.entryPoints=web"
+      - "traefik.http.routers.port.middlewares=https_redirect"
       - "traefik.http.middlewares.https_redirect.redirectscheme.scheme=https"
 
 volumes:

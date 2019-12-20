@@ -16,9 +16,10 @@ services:
       - "--certificatesresolvers.myhttpchallenge.acme.storage=/letsencrypt/acme.json"
       # redirects to https
     labels:
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      - "traefik.http.routers.api.rule=Host(`traefik.odex.be`)"
-      - "traefik.http.routers.api.service=api@internal"
+        - "traefik.http.routers.api.rule=Host(`traefik.domain.com`)"
+        - "traefik.http.routers.api.service=api@internal"
+        - "traefik.http.routers.api.middlewares=auth"
+        - "traefik.http.middlewares.auth.basicauth.users=test:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/,test2:$$apr1$$d9hr9HBB$$4HxwgUir3HP4EsggP/QNo0"
     ports:
       - "80:80"
       - "443:443"
@@ -26,22 +27,59 @@ services:
     volumes:
       - "./letsencrypt:/letsencrypt"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./access.log:/access.log"
+      - "./traefik.yaml:/etc/traefik/traefik.yaml"
+    networks:
+      - web
 
-  whoami:
-    image: "containous/whoami"
-    container_name: "simple-service"
-    labels:
-      - "traefik.enable=true"
-      # HTTPS Rules
-      - "traefik.http.routers.whoami_SSL.rule=Host(`www.odex.be`) || Host(`www.pbfp.xyz`)"
-      - "traefik.http.routers.whoami_SSL.entrypoints=websecure"
-      - "traefik.http.routers.whoami_SSL.tls.certresolver=myhttpchallenge"
-      # HTTP redirect
-      - "traefik.http.routers.whoami.entryPoints=web"
-      - "traefik.http.routers.whoami.middlewares=https_redirect"
-      - "traefik.http.middlewares.https_redirect.redirectscheme.scheme=https"
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - web
+    deploy:
+      labels:
+       - "traefik.http.routers.prometheus.rule=Host(`prometheus.localhost`)"
+       - "traefik.http.routers.prometheus.service=prometheus"
+       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+       - "traefik.docker.network=inbound"
+      placement:
+        constraints:
+        - node.role==manager
+      restart_policy:
+        condition: on-failure
+  grafana:
+    image: grafana/grafana
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+    env_file:
+      - ./grafana/config.monitoring
+    networks:
+      - web
+    user: "104"
+    deploy:
+      labels:
+        - "traefik.http.routers.grafana.rule=Host(`grafana.localhost`)"
+        - "traefik.http.routers.grafana.service=grafana"
+        - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+        - "traefik.docker.network=inbound"
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
 networks:
   web:
-  external: true
+   external: true
       
 

@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+ repo:
+  build: .
+  volumes:
+    - ./arch:/var/www/html
+  labels:
+      - "traefik.enable=true"
+      # HTTPS Rules
+      - "traefik.http.routers.repo_SSL.rule=Host(`repo.odex.be`) || Host(`repo.pbfp.xyz`)"
+      - "traefik.http.routers.repo_SSL.entrypoints=websecure"
+      - "traefik.http.routers.repo_SSL.tls.certresolver=myhttpchallenge"
+      - "traefik.http.services.repo_SSL.loadbalancer.server.port=80"
+      # HTTP redirect
+      - "traefik.http.routers.repo.entryPoints=web"
+      - "traefik.http.routers.repo.middlewares=https_redirect"
+      - "traefik.http.middlewares.https_redirect.redirectscheme.scheme=https"
+  networks:
+    - web
+  restart: unless-stopped
+
+networks:
+  web:
+     external: true
