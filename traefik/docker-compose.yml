@@ -14,6 +14,8 @@ services:
       - "--certificatesresolvers.myhttpchallenge.acme.httpchallenge.entrypoint=web"
       - "--certificatesresolvers.myhttpchallenge.acme.email=tom@odex.be"
       - "--certificatesresolvers.myhttpchallenge.acme.storage=/letsencrypt/acme.json"
+      - "--accessLog.filePath=/access.log"
+      - "--accessLog.bufferingSize=100"
       # redirects to https
     labels:
         - "traefik.http.routers.api.rule=Host(`traefik.domain.com`)"
@@ -32,58 +34,8 @@ services:
     networks:
       - web
 
-  prometheus:
-    image: prom/prometheus
-    volumes:
-      - ./prometheus/:/etc/prometheus/
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
-    networks:
-      - web
-    deploy:
-      labels:
-       - "traefik.http.routers.prometheus.rule=Host(`prometheus.localhost`)"
-       - "traefik.http.routers.prometheus.service=prometheus"
-       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
-       - "traefik.docker.network=inbound"
-      placement:
-        constraints:
-        - node.role==manager
-      restart_policy:
-        condition: on-failure
-  grafana:
-    image: grafana/grafana
-    depends_on:
-      - prometheus
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning/:/etc/grafana/provisioning/
-    env_file:
-      - ./grafana/config.monitoring
-    networks:
-      - web
-    user: "104"
-    deploy:
-      labels:
-        - "traefik.http.routers.grafana.rule=Host(`grafana.localhost`)"
-        - "traefik.http.routers.grafana.service=grafana"
-        - "traefik.http.services.grafana.loadbalancer.server.port=3000"
-        - "traefik.docker.network=inbound"
-      placement:
-        constraints:
-          - node.role == manager
-      restart_policy:
-        condition: on-failure
 networks:
   web:
    external: true
-
-volumes:
- prometheus_data: {}
- grafana_data: {}
       
 

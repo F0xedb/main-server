@@ -6,7 +6,3 @@ accessLog:
   filePath: "/access.log"
   bufferingSize: 100
 
-metrics:
-  prometheus:
-    addEntryPointsLabels: true
-    addServicesLabels: true
