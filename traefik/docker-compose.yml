@@ -81,5 +81,9 @@ services:
 networks:
   web:
    external: true
+
+volumes:
+ prometheus_data: {}
+ grafana_data: {}
       
 
