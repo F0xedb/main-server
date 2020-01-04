@@ -26,7 +26,6 @@ services:
       - "traefik.http.routers.traefik-https.tls.certResolver=letsencrypt"
       - "traefik.http.routers.traefik-https.service=api@internal"
       - "traefik.http.routers.traefik-https.middlewares=auth"
-      
     ports:
       - "80:80"
       - "443:443"
