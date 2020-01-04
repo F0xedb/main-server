@@ -16,13 +16,15 @@ services:
       - "traefik.enable=true"
       # HTTPS Rules
       - "traefik.http.routers.port_SSL.rule=Host(`port.odex.be`) || Host(`port.pbfp.xyz`)"
-      - "traefik.http.routers.port_SSL.entrypoints=websecure"
-      - "traefik.http.routers.port_SSL.tls.certresolver=myhttpchallenge"
+      - "traefik.http.routers.port_SSL.entrypoints=https"
+      - "traefik.http.routers.port_SSL.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.port_SSL.tls=true"
       - "traefik.http.services.port_SSL.loadbalancer.server.port=9000"
-      # HTTP redirect
-      - "traefik.http.routers.port.entryPoints=web"
-      - "traefik.http.routers.port.middlewares=https_redirect"
-      - "traefik.http.middlewares.https_redirect.redirectscheme.scheme=https"
+      # HTTP
+      - "traefik.http.routers.port.rule=Host(`port.odex.be`) || Host(`port.pbfp.xyz`)"
+      - "traefik.http.routers.port.entrypoints=http"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.port.middlewares=https-redirect"
 
 volumes:
   portainer_data:

@@ -5,21 +5,28 @@ services:
   traefik:
     image: "traefik:v2.0.0-rc3"
     container_name: "traefik"
-    command:
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.myhttpchallenge.acme.httpchallenge=true"
-      - "--certificatesresolvers.myhttpchallenge.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.myhttpchallenge.acme.email=tom@odex.be"
-      - "--certificatesresolvers.myhttpchallenge.acme.storage=/letsencrypt/acme.json"
-      # redirects to https
     labels:
-        - "traefik.http.routers.api.rule=Host(`traefik.domain.com`)"
-        - "traefik.http.routers.api.service=api@internal"
-        - "traefik.http.routers.api.middlewares=auth"
-        - "traefik.http.middlewares.auth.basicauth.users=test:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/,test2:$$apr1$$d9hr9HBB$$4HxwgUir3HP4EsggP/QNo0"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.tlsredirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.auth.basicauth.usersfile=/auth/management.auth"
+      - "traefik.http.middlewares.compress.compress=true"
+      - "traefik.http.middlewares.errorhandler.errors.status=400-599"
+      - "traefik.http.middlewares.errorhandler.errors.service=resolver-global-errorpages"
+      - "traefik.http.middlewares.errorhandler.errors.query=/{status}.html"
+      - "traefik.http.middlewares.inflight.inflightreq.amount=10"
+      - "traefik.http.middlewares.retry.retry.attempts=4"
+      # HTTP
+      - "traefik.http.routers.traefik-http.rule=Host(`traefik.odex.be`) || Host(`traefik.pbfp.xyz`)"
+      - "traefik.http.routers.traefik-http.entrypoints=http"
+      - "traefik.http.routers.traefik-http.middlewares=tlsredirect"
+      # HTTPS
+      - "traefik.http.routers.traefik-https.rule=Host(`traefik.odex.be`) || Host(`traefik.pbfp.xyz`)"
+      - "traefik.http.routers.traefik-https.entrypoints=https"
+      - "traefik.http.routers.traefik-https.tls=true"
+      - "traefik.http.routers.traefik-https.tls.certResolver=letsencrypt"
+      - "traefik.http.routers.traefik-https.service=api@internal"
+      - "traefik.http.routers.traefik-https.middlewares=auth"
+      
     ports:
       - "80:80"
       - "443:443"
@@ -32,54 +39,6 @@ services:
     networks:
       - web
 
-  prometheus:
-    image: prom/prometheus
-    volumes:
-      - ./prometheus/:/etc/prometheus/
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
-    networks:
-      - web
-    deploy:
-      labels:
-       - "traefik.http.routers.prometheus.rule=Host(`prometheus.localhost`)"
-       - "traefik.http.routers.prometheus.service=prometheus"
-       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
-       - "traefik.docker.network=inbound"
-      placement:
-        constraints:
-        - node.role==manager
-      restart_policy:
-        condition: on-failure
-  grafana:
-    image: grafana/grafana
-    depends_on:
-      - prometheus
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning/:/etc/grafana/provisioning/
-    env_file:
-      - ./grafana/config.monitoring
-    networks:
-      - web
-    user: "104"
-    deploy:
-      labels:
-        - "traefik.http.routers.grafana.rule=Host(`grafana.localhost`)"
-        - "traefik.http.routers.grafana.service=grafana"
-        - "traefik.http.services.grafana.loadbalancer.server.port=3000"
-        - "traefik.docker.network=inbound"
-      placement:
-        constraints:
-          - node.role == manager
-      restart_policy:
-        condition: on-failure
 networks:
   web:
    external: true
-      
-

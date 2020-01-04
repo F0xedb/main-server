@@ -9,10 +9,15 @@ services:
       - web
     labels:
       - "traefik.enable=true"
-      - "traefik.backend=scrumblr"
-      - "traefik.docker.network=web"
-      - "traefik.frontend.rule=Host:scrumblr.pbfp.xyz"
-      - "traefik.port=80"
+      - "traefik.http.routers.scrumblr_SSL.rule=Host(`scrumblr.odex.be`) || Host(`scrumblr.pbfp.xyz`)"
+      - "traefik.http.routers.scrumblr_SSL.entrypoints=https"
+      - "traefik.http.routers.scrumblr_SSL.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.scrumblr_SSL.tls=true"
+      # HTTP
+      - "traefik.http.routers.scrumblr.rule=Host(`scrumblr.odex.be`) || Host(`scrumblr.pbfp.xyz`)"
+      - "traefik.http.routers.scrumblr.entrypoints=http"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.scrumblr.middlewares=https-redirect"
 
   redis:
     image: redis

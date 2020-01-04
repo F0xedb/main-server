@@ -9,13 +9,15 @@ services:
       - "traefik.enable=true"
       # HTTPS Rules
       - "traefik.http.routers.repo_SSL.rule=Host(`repo.odex.be`) || Host(`repo.pbfp.xyz`)"
-      - "traefik.http.routers.repo_SSL.entrypoints=websecure"
-      - "traefik.http.routers.repo_SSL.tls.certresolver=myhttpchallenge"
+      - "traefik.http.routers.repo_SSL.entrypoints=https"
+      - "traefik.http.routers.repo_SSL.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.repo_SSL.tls=true"
       - "traefik.http.services.repo_SSL.loadbalancer.server.port=80"
-      # HTTP redirect
-      - "traefik.http.routers.repo.entryPoints=web"
-      - "traefik.http.routers.repo.middlewares=https_redirect"
-      - "traefik.http.middlewares.https_redirect.redirectscheme.scheme=https"
+      # HTTP
+      - "traefik.http.routers.repo.rule=Host(`repo.odex.be`) || Host(`repo.pbfp.xyz`)"
+      - "traefik.http.routers.repo.entrypoints=http"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.repo.middlewares=https-redirect"
   networks:
     - web
   restart: unless-stopped

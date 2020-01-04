@@ -1,12 +1,26 @@
 api:
-  dashboard: true
   insecure: true
-
+providers:
+  docker: true
+providers:
+  docker:
+    exposedbydefault: false
+entrypoints:
+  http:
+    address: ":80"
+  https:
+    address: ":443"
+certificatesresolvers:
+  letsencrypt:
+    acme:
+      httpchallenge:
+        entrypoint: http
+      email: tom@odex.be
+      storage: /letsencrypt/acme.json
 accessLog:
-  filePath: "/access.log"
+  filePath: /access.log
   bufferingSize: 100
-
-metrics:
-  prometheus:
-    addEntryPointsLabels: true
-    addServicesLabels: true
+log:
+  level: ERROR
+global:
+    sendAnonymousUsage: false

@@ -19,13 +19,16 @@ services:
         - "traefik.enable=true"
         # HTTPS Rules
         - "traefik.http.routers.jenkins_SSL.rule=Host(`jenkins.odex.be`) || Host(`jenkins.pbfp.xyz`)"
-        - "traefik.http.routers.jenkins_SSL.entrypoints=websecure"
-        - "traefik.http.routers.jenkins_SSL.tls.certresolver=myhttpchallenge"
+        - "traefik.http.routers.jenkins_SSL.entrypoints=https"
+        - "traefik.http.routers.jenkins_SSL.tls.certresolver=letsencrypt"
+        - "traefik.http.routers.jenkins_SSL.tls=true"
         - "traefik.http.services.jenkins_SSL.loadbalancer.server.port=8080"
-        # HTTP redirect
-        - "traefik.http.routers.tos.entryPoints=web"
-        - "traefik.http.routers.tos.middlewares=https_redirect"
-        - "traefik.http.middlewares.https_redirect.redirectscheme.scheme=https"
+        # HTTP
+        - "traefik.http.routers.jenkins.rule=Host(`jenkins.odex.be`) || Host(`jenkins.pbfp.xyz`)"
+        - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.jenkins.entrypoints=http"
+        - "traefik.http.routers.jenkins.middlewares=https-redirect"
+        
 networks:
  web:
    external: true
