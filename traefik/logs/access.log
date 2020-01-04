@@ -1,0 +1,2 @@
+81.82.191.63 - - [04/Jan/2020:13:46:04 +0000] "GET /api/v1/user?hostname=tos&version=v0.5.9&mac=28:7F:CF:7A:CD:AD HTTP/2.0" 404 19 "-" "-" 1 - - 1ms
+81.82.191.63 - - [04/Jan/2020:13:46:21 +0000] "GET /tos.db HTTP/2.0" 304 0 "-" "-" 1 "repo_SSL@docker" "http://172.18.0.6:80" 4ms

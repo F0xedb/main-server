@@ -18,7 +18,7 @@ certificatesresolvers:
       email: tom@odex.be
       storage: /letsencrypt/acme.json
 accessLog:
-  filePath: /access.log
+  filePath: /logs/access.log
   bufferingSize: 100
 log:
   level: ERROR

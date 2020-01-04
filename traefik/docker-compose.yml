@@ -33,7 +33,7 @@ services:
     volumes:
       - "./letsencrypt:/letsencrypt"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./access.log:/access.log"
+      - "./logs/:/logs"
       - "./traefik.yaml:/etc/traefik/traefik.yaml"
     networks:
       - web
