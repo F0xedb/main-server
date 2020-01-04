@@ -64,15 +64,21 @@ All you need is `docker` and `docker-compose`
  
 1. Clone the main-server
 ```sh
-git clone https:://github.com/F0xedb/main-server.git
+git clone https://github.com/F0xedb/main-server.git
 ```
-2. Get SSL certificate
+2. Launch the services you want to use
 ```sh
-sudo certbot certonly --standalone
+# for jenkins
+cd jenkins
+docker-compose up -d
+cd ../
+# for repo
+cd repo
+docker-compose up -d
+cd ../
 ```
-> When generating an ssl certificate make sure that all the subdomains are included
 
-Supply the certs via the traefik docker-compose file
+Don't forget to change the domains to point to your instance by opening each docker-compose file.
 
 3. Create the public docker network
 ```bash
@@ -84,11 +90,8 @@ docker network create web
 cd traefik
 docker-compose up -d
 ```
-5. Start the other docker-compose files (choose which one you want)
-```bash
-cd <container dir>
-docker-compose up -d
-```
+> Traefik will resolve the ssl certificates using letsencrypt. Make sure all subdomains point to your server
+> If you wish to change the subdomain go into each docker-compose file and edit the domains
 
 
 
@@ -113,7 +116,7 @@ Here is a short list with description what each app does
 * repo - A simple webserver managing repositories
 * site - A simple webserver for your website
 * tos - A simple webserver for another site
-* traefik - A reverse proxy
+* traefik - A reverse proxy/loadbalancer
 
 
 _For more examples, please refer to the [Documentation](https://www.github.com/F0xedb/main-server/wiki)_
@@ -143,7 +146,7 @@ Contributions are what make the open source community such an amazing place to b
 <!-- LICENSE -->
 ## License
 
-Distributed under the GPL License. See `LICENSE` for more information.
+Distributed under the MIT License. See `LICENSE` for more information.
 
 
 
