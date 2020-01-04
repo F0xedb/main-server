@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+       api:
+           build: .
+           networks:
+              - web
+           restart: unless-stopped
+           labels:
+            - "traefik.enable=true"
+            # HTTPS Rules
+            - "traefik.http.routers.api_SSL.rule=Host(`api.odex.be`) || Host(`api.pbfp.xyz`)"
+            - "traefik.http.routers.api_SSL.entrypoints=https"
+            - "traefik.http.routers.api_SSL.tls.certresolver=letsencrypt"
+            - "traefik.http.services.api_SSL.loadbalancer.server.port=3000"
+            # HTTP
+            - "traefik.http.routers.api.rule=Host(`api.odex.be`) || Host(`api.pbfp.xyz`)"
+            - "traefik.http.routers.api.entrypoints=http"
+            - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+            - "traefik.http.routers.api.middlewares=https-redirect"
+           volumes:
+              - "./data:/usr/src/app/data/"
+networks:
+    web:
+       external: true
+
