@@ -1,4 +1,11 @@
 repo/arch
 
+# this contains private keys and should never be exposed
+traefik/letsencrypt
+# this can contain sensitive data
+traefik/logs
+user-api/data
+
+
 
 
