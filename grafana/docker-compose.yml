@@ -130,6 +130,7 @@ services:
     restart: unless-stopped
     networks:
       - monitor-net
+      - web
     labels:
       - "traefik.enable=true"
       # HTTPS Rules
@@ -137,7 +138,7 @@ services:
       - "traefik.http.routers.grafana_SSL.entrypoints=https"
       - "traefik.http.routers.grafana_SSL.tls.certresolver=letsencrypt"
       - "traefik.http.routers.grafana_SSL.tls=true"
-      - "traefik.http.services.grafana_SSL.loadbalancer.server.port=3010"
+      - "traefik.http.services.grafana_SSL.loadbalancer.server.port=3000"
       # HTTP
       - "traefik.http.routers.grafana.rule=Host(`grafana.odex.be`) || Host(`grafana.pbfp.xyz`)"
       - "traefik.http.routers.grafana.entrypoints=http"
