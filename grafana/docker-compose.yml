@@ -89,18 +89,7 @@ services:
     image: grafana/grafana:6.6.2
     container_name: grafana
     labels:
-        - "traefik.enable=true"
-        # HTTPS Rules
-        - "traefik.http.routers.grafana_SSL.rule=Host(`grafana.odex.be`) || Host(`grafana.pbfp.xyz`)"
-        - "traefik.http.routers.grafana_SSL.entrypoints=https"
-        - "traefik.http.routers.grafana_SSL.tls.certresolver=letsencrypt"
-        - "traefik.http.routers.grafana_SSL.tls=true"
-        - "traefik.http.services.grafana_SSL.loadbalancer.server.port=80"
-        # HTTP
-        - "traefik.http.routers.grafana.rule=Host(`grafana.odex.be`) || Host(`grafana.pbfp.xyz`)"
-        - "traefik.http.routers.grafana.entrypoints=http"
-        - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
-        - "traefik.http.routers.grafana.middlewares=https-redirect"
+      org.label-schema.group: "monitoring"
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
@@ -113,9 +102,6 @@ services:
       - 3000
     networks:
       - monitor-net
-      - web
-    labels:
-      org.label-schema.group: "monitoring"
 
   pushgateway:
     image: prom/pushgateway:v1.1.0
@@ -132,7 +118,7 @@ services:
     image: stefanprodan/caddy
     container_name: caddy
     ports:
-      - "3000:3000"
+      - "3010:3000"
       - "9090:9090"
       - "9093:9093"
       - "9091:9091"
@@ -145,4 +131,16 @@ services:
     networks:
       - monitor-net
     labels:
-      org.label-schema.group: "monitoring"
+      - "traefik.enable=true"
+      # HTTPS Rules
+      - "traefik.http.routers.grafana_SSL.rule=Host(`grafana.odex.be`) || Host(`grafana.pbfp.xyz`)"
+      - "traefik.http.routers.grafana_SSL.entrypoints=https"
+      - "traefik.http.routers.grafana_SSL.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.grafana_SSL.tls=true"
+      - "traefik.http.services.grafana_SSL.loadbalancer.server.port=3010"
+      # HTTP
+      - "traefik.http.routers.grafana.rule=Host(`grafana.odex.be`) || Host(`grafana.pbfp.xyz`)"
+      - "traefik.http.routers.grafana.entrypoints=http"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.grafana.middlewares=https-redirect"
+      - "org.label-schema.group=monitoring"
