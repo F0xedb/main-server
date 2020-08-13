@@ -5,6 +5,7 @@ services:
   traefik:
     image: "traefik:latest"
     container_name: "traefik"
+    restart: unless-stopped
     labels:
       - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.tlsredirect.redirectscheme.scheme=https"

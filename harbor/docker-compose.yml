@@ -1,0 +1,167 @@
+version: '2'
+
+services:
+  registry:
+    image: docker.io/bitnami/harbor-registry:2-debian-10
+    environment:
+      - REGISTRY_HTTP_SECRET=this_is_odex
+    networks:
+      - web
+    volumes:
+      - registry_data:/storage
+      - ./config/registry/:/etc/registry/:ro
+  registryctl:
+    image: docker.io/bitnami/harbor-registryctl:2-debian-10
+    networks:
+      - web
+    environment:
+      - CORE_SECRET=this_is_odex
+      - JOBSERVICE_SECRET=this_is_odex
+      - REGISTRY_HTTP_SECRET=this_is_odex
+    volumes:
+      - registry_data:/storage
+      - ./config/registry/:/etc/registry/:ro
+      - ./config/registryctl/config.yml:/etc/registryctl/config.yml:ro
+  postgresql:
+    image: docker.io/bitnami/postgresql:11-debian-10
+    container_name: harbor-db
+    environment:
+      - POSTGRESQL_PASSWORD=bitnami
+      - POSTGRESQL_DATABASE=registry
+    networks:
+      - web
+    volumes:
+      - postgresql_data:/bitnami/postgresql
+  core:
+    image: docker.io/bitnami/harbor-core:2-debian-10
+    container_name: harbor-core
+    depends_on:
+      - registry
+      - chartmuseum
+    environment:
+      - CORE_KEY=change-this-key
+      - _REDIS_URL=redis:6379,100,
+      - SYNC_REGISTRY=false
+      - CHART_CACHE_DRIVER=redis
+      - _REDIS_URL_REG=redis://redis:6379/1
+      - PORT=8080
+      - LOG_LEVEL=info
+      - EXT_ENDPOINT=https://docker.odex.be
+      - DATABASE_TYPE=postgresql
+      - REGISTRY_CONTROLLER_URL=http://registryctl:8080
+      - POSTGRESQL_HOST=postgresql
+      - POSTGRESQL_PORT=5432
+      - POSTGRESQL_DATABASE=registry
+      - POSTGRESQL_USERNAME=postgres
+      - POSTGRESQL_PASSWORD=bitnami
+      - POSTGRESQL_SSLMODE=disable
+      - REGISTRY_URL=http://registry:5000
+      - TOKEN_SERVICE_URL=http://core:8080/service/token
+      - HARBOR_ADMIN_PASSWORD=ppy6K5xnNU4b
+      - CORE_SECRET=this_is_odex
+      - JOBSERVICE_SECRET=this_is_odex
+      - ADMIRAL_URL=
+      - WITH_NOTARY=False
+      - WITH_CLAIR=False
+      - WITH_CHARTMUSEUM=True
+      - CHART_REPOSITORY_URL=http://chartmuseum:8080
+      - CORE_URL=http://core:8080
+      - JOBSERVICE_URL=http://jobservice:8080
+      - REGISTRY_STORAGE_PROVIDER_NAME=filesystem
+      - REGISTRY_CREDENTIAL_USERNAME=foxedb
+      - REGISTRY_CREDENTIAL_PASSWORD=ppy6K5xnNU4b
+      - READ_ONLY=false
+      - RELOAD_KEY=
+    networks:
+      - web
+    volumes:
+      - core_data:/data
+      - ./config/core/app.conf:/etc/core/app.conf:ro
+      - ./config/core/private_key.pem:/etc/core/private_key.pem:ro
+  portal:
+    image: docker.io/bitnami/harbor-portal:2-debian-10
+    container_name: harbor-portal
+    networks:
+      - web
+    depends_on:
+      - core
+  jobservice:
+    image: docker.io/bitnami/harbor-jobservice:2-debian-10
+    container_name: harbor-jobservice
+    depends_on:
+      - redis
+      - core
+    environment:
+      - CORE_SECRET=this_is_odex
+      - JOBSERVICE_SECRET=this_is_odex
+      - CORE_URL=http://core:8080
+      - REGISTRY_CONTROLLER_URL=http://registryctl:8080
+      - REGISTRY_CREDENTIAL_USERNAME=foxedb
+      - REGISTRY_CREDENTIAL_PASSWORD=ppy6K5xnNU4b
+    networks:
+      - web
+    volumes:
+      - jobservice_data:/var/log/jobs
+      - ./config/jobservice/config.yml:/etc/jobservice/config.yml:ro
+  redis:
+    image: docker.io/bitnami/redis:6.0-debian-10
+    networks:
+      - web
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+  harbor-nginx:
+    image: docker.io/bitnami/nginx:1.19-debian-10
+    container_name: nginx
+    volumes:
+      - ./config/proxy/nginx.conf:/opt/bitnami/nginx/conf/nginx.conf:ro
+    labels:
+        - "traefik.enable=true"
+        # HTTPS Rules
+        - "traefik.http.routers.docker_SSL.rule=Host(`docker.odex.be`)"
+        - "traefik.http.routers.docker_SSL.entrypoints=https"
+        - "traefik.http.routers.docker_SSL.tls.certresolver=letsencrypt"
+        - "traefik.http.routers.docker_SSL.tls=true"
+        - "traefik.http.services.docker_SSL.loadbalancer.server.port=8080"
+        # HTTP
+        - "traefik.http.routers.docker.rule=Host(`docker.odex.be`)"
+        - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.docker.entrypoints=http"
+        - "traefik.http.routers.docker.middlewares=https-redirect"
+    networks:
+      - web
+    depends_on:
+      - postgresql
+      - registry
+      - core
+      - portal
+  chartmuseum:
+    container_name: chartmuseum
+    image: docker.io/bitnami/chartmuseum:0-debian-10
+    networks:
+      - web
+    environment:
+      - CACHE=redis
+      - CACHE_REDIS_ADDR=redis:6379
+      - CACHE_REDIS_DB=1
+      - DEPTH=1
+      - PORT=8080
+      - STORAGE=local
+      - STORAGE_LOCAL_ROOTDIR=/bitnami/data
+      - ALLOW_OVERWRITE=true
+      - INDEX_LIMIT=0
+    volumes:
+      - chartmuseum_data:/bitnami/data
+networks:
+  web:
+    external: true
+volumes:
+  registry_data:
+    driver: local
+  core_data:
+    driver: local
+  jobservice_data:
+    driver: local
+  postgresql_data:
+    driver: local
+  chartmuseum_data:
+    driver: local
