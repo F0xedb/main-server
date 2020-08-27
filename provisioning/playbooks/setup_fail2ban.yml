@@ -1,0 +1,39 @@
+---
+    - name: Install fail2ban
+      hosts: fail2ban
+      become: true
+      tasks:
+        - name: install fail2ban
+          package:
+            name: fail2ban
+            state: present
+
+        - name: Save the repository definition
+          copy:
+            dest: "/etc/fail2ban/jail.local"
+            content: |
+                [DEFAULT]
+                banaction = ufw
+                banaction_allports = ufw
+                [sshd]
+                enabled = true
+                port = 22
+                filter = sshd
+                logpath = /var/log/auth.log
+                maxretry = 3
+                bantime=3600
+                findtime=600
+
+        - name: Setup the sshd jail rules
+          copy:
+            src: ../files/sshd.conf
+            dest: /etc/fail2ban/filter.d/sshd.conf
+            owner: root
+            group: root
+            mode: '644'
+
+        - name: Enable and start fail2ban
+          systemd:
+            name: fail2ban
+            state: started
+            enabled: yes
