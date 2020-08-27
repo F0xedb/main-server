@@ -1,0 +1,55 @@
+version: "3"
+
+services:
+  sonarqube:
+    # If this image fails to start due to a vm memory size limitation then you need to increase it using the following command
+    # sysctl -w vm.max_map_count=262144
+    build: .
+    networks:
+      - web
+    environment:
+      - SONARQUBE_JDBC_URL=jdbc:postgresql://db:5432/${TOS_DB_NAME}
+      - SONARQUBE_JDBC_USERNAME=${TOS_DB_NAME}
+      - SONARQUBE_JDBC_PASSWORD=${TOS_DB_PASS}
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      # HTTPS Rules
+      - "traefik.http.routers.sonarqube_SSL.rule=Host(`${TOS_SONAR_URL}`)"
+      - "traefik.http.routers.sonarqube_SSL.entrypoints=https"
+      - "traefik.http.routers.sonarqube_SSL.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.sonarqube_SSL.tls=true"
+      - "traefik.http.services.sonarqube_SSL.loadbalancer.server.port=9000"
+      # HTTP
+      - "traefik.http.routers.sonarqube.rule=Host(`${TOS_SONAR_URL}`)"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.sonarqube.entrypoints=http"
+      - "traefik.http.routers.sonarqube.middlewares=https-redirect"
+    volumes:
+      - sonarqube_conf:/opt/sonarqube/conf
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_bundled-plugins:/opt/sonarqube/lib/bundled-plugins
+  db:
+    image: postgres
+    restart: unless-stopped
+    networks:
+      - web
+    environment:
+      - POSTGRES_USER=${TOS_DB_NAME}
+      - POSTGRES_PASSWORD=${TOS_DB_PASS}
+    volumes:
+      - postgresql:/var/lib/postgresql
+      - postgresql_data:/var/lib/postgresql/data
+
+networks:
+  web:
+    external: true
+
+volumes:
+  sonarqube_conf:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_bundled-plugins:
+  postgresql:
+  postgresql_data:
