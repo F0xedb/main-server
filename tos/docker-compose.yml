@@ -9,7 +9,7 @@ services:
   environment:
     - HUGO_REFRESH_TIME=3600
     - HUGO_THEME=kross-hugo-portfolio-template
-    - HUGO_BASEURL=https://tos.pbfp.xyz
+    - HUGO_BASEURL=https://tos.odex.be
   restart: unless-stopped
 
  web:
@@ -28,6 +28,7 @@ services:
       - "traefik.http.routers.tos_SSL.tls.certResolver=letsencrypt"
       - "traefik.http.routers.tos_SSL.tls=true"
       - "traefik.http.services.tos_SSL.loadbalancer.server.port=80"
+      - "traefik.http.routers.tos_SSL.middlewares=error-pages-middleware"
       # HTTP
       - "traefik.http.routers.tos.rule=Host(`tos.odex.be`) || Host(`tos.pbfp.xyz`)"
       - "traefik.http.routers.tos.entrypoints=http"

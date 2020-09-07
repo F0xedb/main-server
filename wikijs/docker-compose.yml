@@ -4,7 +4,7 @@ services:
     image: postgres:11-alpine
     environment:
       POSTGRES_DB: wiki
-      POSTGRES_PASSWORD: yourSecretPassword
+      POSTGRES_PASSWORD: mySecretPasswordv%
       POSTGRES_USER: wikijs
     logging:
       driver: "none"
@@ -22,7 +22,7 @@ services:
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: wikijs
-      DB_PASS: yourSecretPassword
+      DB_PASS: mySecretPasswordv%
       DB_NAME: wiki
     restart: unless-stopped
     networks:
@@ -34,6 +34,7 @@ services:
       - "traefik.http.routers.wikijs_SSL.entrypoints=https"
       - "traefik.http.routers.wikijs_SSL.tls.certresolver=letsencrypt"
       - "traefik.http.routers.wikijs_SSL.tls=true"
+      - "traefik.http.routers.wikijs_SSL.middlewares=error-pages-middleware"
       - "traefik.http.services.wikijs_SSL.loadbalancer.server.port=3000"
       # HTTP
       - "traefik.http.routers.wikijs.rule=Host(`wiki.odex.be`)"

@@ -1,0 +1,49 @@
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    server_tokens	off;
+
+    sendfile 		on;
+    tcp_nopush		on;
+
+    keepalive_timeout	60;
+    tcp_nodelay		on;
+    client_body_timeout 15;
+
+    gzip		on;
+    gzip_vary		on;
+    gzip_min_length		1k;
+
+    upstream backend {
+	    server 0.0.0.0:80;
+    }
+
+    server {
+    	listen       80;
+    	server_name  localhost;
+
+    	error_page  400    /404.html;
+    	error_page  401    /404.html;
+    	error_page  402    /404.html;
+    	error_page  403    /404.html;
+    	error_page  404    /404.html;
+
+    	error_page  500    /404.html;
+    	error_page  501    /404.html;
+    	error_page  502    /404.html;
+    	error_page  503    /404.html;
+    	error_page  504    /404.html;
+
+    	location / {
+        	root  /usr/share/nginx/error-pages;
+        	internal;
+    	}
+    }
+}

@@ -2,9 +2,28 @@ version: '2'
 
 services:
   registry:
-    image: docker.io/bitnami/harbor-registry:2-debian-10
+    restart: always
+    image: registry:2
+    volumes:
+      - registry:/var/lib/registry
     environment:
-      - REGISTRY_HTTP_SECRET=this_is_odex
+      - REGISTRY_HTTP_ADDR=0.0.0.0:5000
+    networks:
+      - web
+    labels:
+        - "traefik.enable=true"
+        # HTTPS Rules
+        - "traefik.http.routers.registry_SSL.rule=Host(`registry.odex.be`)"
+        - "traefik.http.routers.registry_SSL.entrypoints=https"
+        - "traefik.http.routers.registry_SSL.tls.certresolver=letsencrypt"
+        - "traefik.http.routers.registry_SSL.tls=true"
+        - "traefik.http.routers.registry_SSL.middlewares=error-pages-middleware"
+        - "traefik.http.services.registry_SSL.loadbalancer.server.port=5000"
+        # HTTP
+        - "traefik.http.routers.registry.rule=Host(`registry.odex.be`)"
+        - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.registry.entrypoints=http"
+        - "traefik.http.routers.registry.middlewares=https-redirect"
     networks:
       - web
     volumes:

@@ -12,21 +12,21 @@ services:
       - "traefik.http.middlewares.auth.basicauth.usersfile=/auth/management.auth"
       - "traefik.http.middlewares.compress.compress=true"
       - "traefik.http.middlewares.errorhandler.errors.status=400-599"
-      - "traefik.http.middlewares.errorhandler.errors.service=resolver-global-errorpages"
+      - "traefik.http.middlewares.errorhandler.errors.service=error"
       - "traefik.http.middlewares.errorhandler.errors.query=/{status}.html"
       - "traefik.http.middlewares.inflight.inflightreq.amount=10"
       - "traefik.http.middlewares.retry.retry.attempts=4"
+      # HTTPS Rules
+      - "traefik.http.routers.traefik_SSL.rule=Host(`traefik.odex.be`) || Host(`traefik.pbfp.xyz`)"
+      - "traefik.http.routers.traefik_SSL.entrypoints=https"
+      - "traefik.http.routers.traefik_SSL.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik_SSL.tls=true"
+      - "traefik.http.routers.traefik_SSL.service=api@internal"
       # HTTP
-      - "traefik.http.routers.traefik-http.rule=Host(`traefik.odex.be`) || Host(`traefik.pbfp.xyz`)"
-      - "traefik.http.routers.traefik-http.entrypoints=http"
-      - "traefik.http.routers.traefik-http.middlewares=tlsredirect"
-      # HTTPS
-      - "traefik.http.routers.traefik-https.rule=Host(`traefik.odex.be`) || Host(`traefik.pbfp.xyz`)"
-      - "traefik.http.routers.traefik-https.entrypoints=https"
-      - "traefik.http.routers.traefik-https.tls=true"
-      - "traefik.http.routers.traefik-https.tls.certResolver=letsencrypt"
-      - "traefik.http.routers.traefik-https.service=api@internal"
-      - "traefik.http.routers.traefik-https.middlewares=auth"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.odex.be`) || Host(`traefik.pbfp.xyz`)"
+      - "traefik.http.routers.traefik.entrypoints=http"
+      - "traefik.http.routers.traefik.middlewares=https-redirect"
+
     ports:
       - "80:80"
       - "443:443"

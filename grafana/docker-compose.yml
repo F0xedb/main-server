@@ -136,6 +136,7 @@ services:
       - "traefik.http.routers.grafana_SSL.entrypoints=https"
       - "traefik.http.routers.grafana_SSL.tls.certresolver=letsencrypt"
       - "traefik.http.routers.grafana_SSL.tls=true"
+      - "traefik.http.routers.grafana_SSL.middlewares=error-pages-middleware"
       - "traefik.http.services.grafana_SSL.loadbalancer.server.port=3000"
       # HTTP
       - "traefik.http.routers.grafana.rule=Host(`grafana.odex.be`) || Host(`grafana.pbfp.xyz`)"

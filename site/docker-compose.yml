@@ -3,6 +3,7 @@ version: '3'
 services:
    web:
      build: .
+     restart: unless-stopped
      networks:
              - web
      labels:
@@ -12,6 +13,7 @@ services:
        - "traefik.http.routers.site_SSL.entrypoints=https"
        - "traefik.http.routers.site_SSL.tls.certresolver=letsencrypt"
        - "traefik.http.routers.site_SSL.tls=true"
+       - "traefik.http.routers.site_SSL.middlewares=error-pages-middleware"
        # HTTP
        - "traefik.http.routers.site.rule=Host(`www.odex.be`) || Host(`www.pbfp.xyz`)"
        - "traefik.http.routers.site.entrypoints=http"

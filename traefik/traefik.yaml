@@ -1,9 +1,11 @@
 api:
   insecure: true
+  dashboard: true
 providers:
   docker: true
 providers:
   docker:
+    network: web
     exposedbydefault: false
 entrypoints:
   http:
@@ -21,6 +23,6 @@ accessLog:
   filePath: /logs/access.log
   bufferingSize: 100
 log:
-  level: ERROR
+  level: DEBUG
 global:
     sendAnonymousUsage: false

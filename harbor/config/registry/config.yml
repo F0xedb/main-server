@@ -22,6 +22,8 @@ http:
   secret: placeholder
   debug:
     addr: localhost:5001
+redirect:
+  disable: true
 auth:
   htpasswd:
     realm: harbor-registry-basic-realm

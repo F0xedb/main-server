@@ -1,0 +1,42 @@
+version: '3'
+services:
+  shynet:
+    container_name: shynet_main
+    image: milesmcc/shynet:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - web
+    depends_on:
+      - shynetdb
+    labels:
+        - "traefik.enable=true"
+        # HTTPS Rules
+        - "traefik.http.routers.shynet_SSL.rule=Host(`shynet.odex.be`)"
+        - "traefik.http.routers.shynet_SSL.entrypoints=https"
+        - "traefik.http.routers.shynet_SSL.tls.certresolver=letsencrypt"
+        - "traefik.http.routers.shynet_SSL.tls=true"
+        - "traefik.http.routers.shynet_SSL.middlewares=error-pages-middleware"
+        - "traefik.http.services.shynet_SSL.loadbalancer.server.port=8080"
+        # HTTP
+        - "traefik.http.routers.shynet.rule=Host(`shynet.odex.be`)"
+        - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.shynet.entrypoints=http"
+        - "traefik.http.routers.shynet.middlewares=https-redirect"
+  shynetdb:
+    image: postgres
+    restart: always
+    environment:
+      - "POSTGRES_USER=${DB_USER}"
+      - "POSTGRES_PASSWORD=${DB_PASSWORD}"
+      - "POSTGRES_DB=${DB_NAME}"
+    volumes:
+      - shynet_db:/var/lib/postgresql/data
+    networks:
+      - web
+volumes:
+  shynet_db:
+networks:
+  web:
+   external: true
