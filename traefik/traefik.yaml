@@ -5,6 +5,8 @@ providers:
 providers:
   docker:
     exposedbydefault: false
+  file:
+   filename: /etc/traefik/dynamic_conf.yaml
 entrypoints:
   http:
     address: ":80"
