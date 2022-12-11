@@ -23,6 +23,6 @@
   },
   "homepage": "https://github.com/ODEX-TOS/user-counter#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.3"
   }
 }
